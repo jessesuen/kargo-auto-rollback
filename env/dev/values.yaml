@@ -1,0 +1,20 @@
+environment: dev
+
+createNamespace: true
+
+image:
+  tag: 0.4.0
+
+replicaCount: 1
+
+ingress:
+  enabled: true
+  hosts:
+    - host: auto-rollback-dev.demo.akuity.io
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+serviceMonitor:
+  enabled: true
+  interval: 15s

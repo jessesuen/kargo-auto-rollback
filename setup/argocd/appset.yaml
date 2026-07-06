@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kargo-auto-rollback
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/jessesuen/kargo-auto-rollback.git
+      revision: HEAD
+      directories:
+      - path: env/*
+  template:
+    metadata:
+      name: kargo-auto-rollback-{{path.basename}}
+      annotations:
+        kargo.akuity.io/authorized-stage: auto-rollback:{{path.basename}}
+    spec:
+      destination:
+        namespace: kargo-auto-rollback-{{path.basename}}
+        name: demo
+      project: auto-rollback
+      sources:
+        - repoURL: https://github.com/jessesuen/otel-app.git
+          path: charts/otel-app
+          helm:
+            valueFiles:
+            - "$values/env/{{path.basename}}/values.yaml"
+        - repoURL: https://github.com/jessesuen/kargo-auto-rollback.git
+          ref: values

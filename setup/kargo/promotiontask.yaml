@@ -1,0 +1,39 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote
+  namespace: auto-rollback
+spec:
+  vars:
+  - name: image
+    value: ghcr.io/jessesuen/otel-app
+
+  steps:
+  - uses: git-clone
+    config:
+      repoURL: https://github.com/jessesuen/kargo-auto-rollback.git
+      checkout:
+      - branch: main
+        path: ./src
+  - uses: yaml-update
+    config:
+      path: ./src/env/${{ ctx.stage }}/values.yaml
+      updates:
+      - key: image.tag
+        value: ${{ imageFrom( vars.image ).Tag }}
+  - uses: git-commit
+    as: commit
+    config:
+      path: ./src
+      message: |
+        Update ${{ ctx.stage }} to ${{ ctx.targetFreight.alias }}
+
+        Freight: ${{ ctx.targetFreight.name }}
+        K8s Image: ${{ vars.image }}:${{ imageFrom(vars.image).Tag }}
+  - uses: git-push
+    config:
+      path: ./src
+  - uses: argocd-update
+    config:
+      apps:
+      - name: kargo-auto-rollback-${{ ctx.stage }}

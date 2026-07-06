@@ -1,0 +1,16 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: auto-rollback
+  namespace: auto-rollback
+spec:
+  promotionPolicies:
+  - stageSelector:
+      name: staging
+    autoRollback: {}
+      # onPromotion:
+      # - Failed
+      # - Errored
+      # onVerification:
+      # - Failed
+      # - Error
